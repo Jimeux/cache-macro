@@ -42,6 +42,9 @@ lazy val root = (project in file("."))
     commonSettings,
     name := "cache-macro",
     libraryDependencies ++= Seq(
+      "org.json4s" %% "json4s-native" % "3.5.3",
+      "org.json4s" %% "json4s-ext" % "3.5.3",
+
       scalaTest % Test
     )
   )
