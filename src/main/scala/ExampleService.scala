@@ -13,13 +13,11 @@ class ExampleService(
   implicit val formats: Formats = Serialization.formats(NoTypeHints)
 
   @cached
-  def findById(id: Int): Future[Option[Example]] = {
+  def findById(id: Int): Future[Option[Example]] =
     repository.findById(id)
-  }
 
   @cached
-  def findAll: Future[Seq[Example]] = {
+  def findAll: Future[Seq[Example]] =
     repository.findAll
-  }
 
 }
