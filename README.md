@@ -10,16 +10,16 @@ For example, the following usage:
 
 ```scala
 @cache
-def find(id: Int): Future[Option[User]] = {
-  userRepository.findById(id)
+def find(id: Int, includeAddress: Boolean): Future[Option[User]] = {
+  userRepository.findById(id, includeAddress)
 }
 ``` 
 
 Expands to:
 
 ```scala
-def find(id: Int): Future[Option[User]] = {
-  val key = getClass.getName + ":" + "findById" + ":" + String.valueOf("id:" + id.toString)
-  mac.cached.applyCache[Option[User]](key, userRepository.findById(id))
+def find(id: Int, includeAddress: Boolean): Future[Option[User]] = {
+  val key = s"${getClass.getName}:findById:id:$id:includeAddress:$includeAddress"
+  mac.cached.applyCache[Option[User]](key, userRepository.findById(id, includeAddress))
 }
 ```

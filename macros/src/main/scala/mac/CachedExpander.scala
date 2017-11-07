@@ -17,14 +17,13 @@ object CachedExpander {
         if (invalidReturnType(rtType))
           abort(ReturnTypeError)
         else {
-          val paramList = params.headOption.getOrElse(Seq[Term.Param]())
-          val fnNameKeyString = Term.Name("\"" + fnName.syntax + "\"")
-          val paramKeyString = paramKeys(params)
+          val firstParamList = params.headOption getOrElse Seq[Term.Param]()
+          val key = generateKey(firstParamList, fnName)
           val valueType = Type.Name(rtType.get.children(1).syntax)
 
           q"""
-            def $fnName(..$paramList): $rtType = {
-              val key = getClass.getName + ":" + $fnNameKeyString + ":" + $paramKeyString
+            def $fnName(..$firstParamList): $rtType = {
+              val key = $key
               mac.cached.applyCache[$valueType](key, $expr)
             }
           """
@@ -36,18 +35,16 @@ object CachedExpander {
 
   private def invalidReturnType(returnType: Option[Type]): Boolean =
     returnType.exists { rt =>
-      rt.children.size != 2 || rt.children.head.toString != "Future"
+      rt.children.size != 2 || rt.children.head.syntax != "Future"
     }
 
-  private def paramKeys(paramLists: Seq[Seq[Term.Param]]): Term =
-    paramLists.headOption
-      .map { firstList => firstList map paramToKey }
-      .map { keys => Term.Apply(Term.Name("String.valueOf"), keys.toList) }
-      .getOrElse(Term.Name("\"\""))
+  private def generateKey(paramList: Seq[Term.Param], fnName: Term.Name): Term = {
+    val paramKeys = paramList map { param =>
+      val symbol = param.name.syntax
+      s"$symbol:$$$symbol"
+    } mkString ":"
 
-  private def paramToKey(param: Term.Param): Term = {
-    val symbol = param.name.syntax
-    s""""$symbol:" + $symbol.toString""".parse[Term].get
+    s"""s"$${getClass.getName}:${fnName.syntax}:$paramKeys"""".parse[Term].get
   }
 
 }
